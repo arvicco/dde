@@ -1,6 +1,8 @@
 = dde
 
-Description goes here.
+Server that mimics Excel receiving XLTable data via DDE protocol
+
+Work in progress, do ton use it yet...
 
 == Note on Patches/Pull Requests
  

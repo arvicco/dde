@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<component>
+
+<?component error="true" debug="true"?>
+
+<registration
+	description="GearBox"
+	progid="GearBox.WSC"
+	version="1.00"
+	classid="{39c281f9-76cd-4233-baeb-2cf1ae128301}"
+>
+</registration>
+
+<public>
+	<property name="WhereWe">
+		<put/>
+	</property>
+	<property name="WhereInQUIK">
+		<get/>
+	</property>
+	<method name="AddCMD">
+		<PARAMETER name="WHAT"/>
+	</method>	
+	<method name="RunInQUIK">
+		<PARAMETER name="WHAT"/>
+		<PARAMETER name="P"/>
+	</method>
+	<method name="RunInQUIKA">
+		<PARAMETER name="WHAT"/>
+		<PARAMETER name="P"/>
+		<PARAMETER name="ANSWER"/>
+	</method>
+	
+</public>
+
+<script language="VBScript">
+<![CDATA[
+Dim WHERE_WE,WHERE_IN,WHERE_ML
+Dim Wscript,fso
+
+
+Function get_WhereInQUIK()
+         get_WhereInQUIK=WHERE_IN
+End Function
+
+Function put_WhereWe(newValue)
+WHERE_WE = newValue
+Set fso = CreateObject("Scripting.FileSystemObject")
+INI=False
+If (fso.FileExists(WHERE_WE & "\GEARBOX.QPL")) Then
+    Set GEARBOX_QPL=fso.OpenTextFile(WHERE_WE & "\GEARBOX.QPL", 1, False)
+    Do While GEARBOX_QPL.AtEndOfStream <> True
+       WHAT = GEARBOX_QPL.ReadLine
+       If InStr(1,WHAT,"'BEGIN_INI") Then 
+          INI=True:Exit Do   
+       End If   
+    Loop   
+    If INI Then
+       Do
+         WHAT = GEARBOX_QPL.ReadLine 
+         If InStr(1,WHAT,"'END_INI") Then Exit Do
+         P=Split(WHAT,"=")
+         P(1)=Replace(P(1),"""","")
+         Select Case Trim(P(0))
+                Case "WHERE_WE"
+                     WHERE_IN=P(1) 
+                     If Not (fso.FolderExists(WHERE_IN)) Then fso.CreateFolder(WHERE_IN)
+                Case "FILE"
+                     WHERE_ML=WHERE_IN & "\" & P(1)
+         End Select
+       Loop  
+    End If
+    GEARBOX_QPL.Close
+   Else
+    MsgBox "Нет файла GEARBOX.QPL в" & vbCrLf & WHERE_WE
+    WHERE_WE=""
+End If    
+If Not INI Then 
+   MsgBox "Нет настроечной секции в GEARBOX.QPL"
+   WHERE_WE=""
+   Exit Function
+End If
+Set P=CreateObject("Scripting.Dictionary")
+End Function
+
+Function AddCMD(WHAT)
+         Set P(WHAT)=CreateObject("Scripting.Dictionary")
+         Set AddCMD=P(WHAT)
+End Function
+
+Function RunInQUIK(WHAT,P)
+If Len(WHERE_WE)=0 Then
+   RunInQUIK=False
+   Exit Function
+End If   
+RunInQUIK=True
+If IsObject(P) Then
+   For Each Key In P.Keys
+       P(Key)=Replace(P(Key),",",".")
+       P_STRING=P_STRING & "," & Key & "=" & P(Key)
+   Next
+   P_STRING=Replace(P_STRING,",","",1,1)
+  Else
+   P_STRING=P
+End If 
+If Not fso.FileExists(WHERE_ML) Then fso.CreateTextFile WHERE_ML, False
+On Error Resume Next
+fso.OpenTextFile(WHERE_ML, 8, False).WriteLine WHAT & "," & P_STRING
+If Err.Number<>0 Then RunInQUIK=False
+End Function
+
+Function RunInQUIKA(WHAT,PCMD)
+PCMD("$P0")=Timer*100     
+RunInQUIKA=RunInQUIK(WHAT,PCMD)
+ANSWER_FILE=WHERE_IN & "\" & WHAT & "." & PCMD("$P0")
+If Not RunInQUIKA Then Exit Function
+Do 
+   If fso.FileExists(ANSWER_FILE) Then
+      PCMD("$ANSWER")=fso.OpenTextFile(ANSWER_FILE,1).ReadAll
+      fso.DeleteFile ANSWER_FILE
+      Exit Do
+   End If
+Loop
+End Function
+
+]]>
+</script>
+
+</component>

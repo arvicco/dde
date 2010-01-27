@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "dde"
-    gem.summary = %Q{New project dde}
-    gem.description = %Q{New project dde}
+    gem.summary = %Q{DDE server for Ruby}
+    gem.description = %Q{Server that mimics Excel receiving XLTable data via DDE protocol}
     gem.email = "arvitallian@gmail.com"
     gem.homepage = "http://github.com/arvicco/dde"
     gem.authors = ["arvicco"]

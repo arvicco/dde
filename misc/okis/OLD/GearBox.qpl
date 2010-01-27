@@ -1,0 +1,137 @@
+PORTFOLIO_EX GearBox;
+DESCRIPTION GearBox;
+CLIENTS_LIST ALL_CLIENTS;
+FIRMS_LIST FIRM_ID;
+
+PROGRAM
+'Скрипт принадлежит LUXIDSOFT
+'Просьбы
+'Если Вы решите им пользоваться сообщить нам о замеченных ошибках,
+'Не публикуйте в том числе и в интернете, не уведомив нас
+'Не передавайте скрипт другим, не уведомив нас
+'Спасибо за понимание.
+'Внешняя программа пишет в файл команды см GEARBOX.TXT
+
+
+
+NEW_GLOBAL ("COUNTER",1) 
+
+err=0
+i=1
+
+'Не удалять строки начиная с BEGIN_INI по END_INI включительно
+'Это настроечная секция, она используется в других программных модулях
+
+'BEGIN_INI'
+WHERE_WE="C:\inQUIK"
+FILE="inQUIK.txt"
+'END_INI'
+
+FILE_IN=WHERE_WE & "\" & FILE
+
+
+LINES=Get_File_Len(FILE_IN)
+P=Create_Map()
+For i From 1 To Get_File_Len(FILE_IN) 'LINES
+    'Получаем строку вида
+    'ADD_LABEL,$P1=RI,TEXT=ПРИВЕТ,IMAGE_PATH=C:\s.BMP,ALIGNMENT=TOP,YVALUE=84000,DATE=20090512,TIME=120000,R=0,G=0,B=0,TRANSPARENCY=25,FONT_FACE_NAME=Tahoma,FONT_HEIGHT=15,HINT=HINT
+    'DELETE_ALL_LABELS,$P1=RI
+    'DELETE_LABEL,$P1=RI,$P2=2 
+    'MESSAGE,$P1=СООБЩЕНИЕ,$P2=1
+    'GET_INFO_PARAM,$P0=245,$P1=VERSION
+    '*,....   эта строка не будет обработана
+    RC=0
+    ii=0
+    CMD=""
+    WHAT=""
+    WHAT=Read_Line(FILE_IN,i,err)
+    For PRM In WHAT
+        If ii>0 
+           R=Find(PRM,1,"=")
+           VALUE=Substr(PRM,R+1,Len(PRM)-R)    
+           If Substr(PRM,0,2)="$P"  
+              KEY=Substr(PRM,1,R-1)
+              SP=Set_Value(SP,KEY,VALUE) 
+            Else
+              KEY=Substr(PRM,0,R) 
+              PP=Set_Value(PP,KEY,VALUE)   
+           End If     
+        Else
+           PP=Create_Map()
+           SP=Create_Map()
+           CMD=PRM
+        End If 
+        ii=ii+1
+    End For
+    If CMD="ADD_LABEL" 
+       RC=Add_Label(Get_Value(SP,"P1"),PP)
+       ANSWER=Get_Value(PP,"TEXT") & ",GR=" & Get_Value(SP,"P1") & ",Y=" & Get_Value(PP,"YVALUE") & ",X=" & Get_Value(PP,"DATE") & "-" & Get_Value(PP,"TIME")
+       InTable(0,RC,CMD,ANSWER)
+    End If
+    If CMD="DELETE_ALL_LABELS"
+       RC=DELETE_ALL_LABELS(Get_Value(SP,"P1")) 
+       ANSWER="GR=" & Get_Value(SP,"P1")
+       InTable(0,RC,CMD,ANSWER)
+    End If
+    If CMD="DELETE_LABEL"
+       RC=DELETE_LABEL(Get_Value(SP,"P1"),Get_Value(SP,"P2"))
+       ANSWER="GR=" & Get_Value(SP,"P1") & ",N=" & Get_Value(SP,"P2")
+       InTable(0,RC,CMD,ANSWER)
+    End If
+    If CMD="MESSAGE"
+       MESSAGE(Get_Value(SP,"P1"),Get_Value(SP,"P2"))
+    End If 
+    If CMD="GET_INFO_PARAM"
+       ANSWER=GET_INFO_PARAM(Get_Value(SP,"P1"))
+       ID=Get_Value(SP,"P0")
+       InTable(ID,0,CMD,ANSWER)
+       WRITE_ANSWER(WHERE_WE,CMD,ID,ANSWER)
+    End If 
+       
+End For
+Clear_File(FILE_IN)
+
+Func InTable(ID,RC,CMD,ANSWER)
+ROW=Create_Map()
+ROW=Set_Value(ROW,"ID",ID)
+ROW=Set_Value(ROW,"RC",RC)
+ROW=Set_Value(ROW,"CMD",CMD)
+ROW=Set_Value(ROW,"ANSWER",ANSWER)
+Add_Item(COUNTER,ROW)
+COUNTER=COUNTER+1
+End Func
+
+Func WRITE_ANSWER(WHERE_WE,CMD,ID,ANSWER)
+FILE=WHERE_WE & "\" & CMD & "." & ID
+Clear_File(FILE)
+WRITELN(FILE,ANSWER)
+End Func
+
+END_PROGRAM
+
+PARAMETER ID;
+PARAMETER_TITLE ID;
+PARAMETER_DESCRIPTION ID;
+PARAMETER_TYPE NUMERIC(5,0);
+END
+
+PARAMETER RC;
+PARAMETER_TITLE RC;
+PARAMETER_DESCRIPTION RC;
+PARAMETER_TYPE STRING(50);
+END
+
+PARAMETER CMD;
+PARAMETER_TITLE Команда;
+PARAMETER_DESCRIPTION Команда;
+PARAMETER_TYPE STRING(20);
+END
+
+PARAMETER ANSWER;
+PARAMETER_TITLE Ответ;
+PARAMETER_DESCRIPTION Ответ;
+PARAMETER_TYPE STRING(100);
+END
+
+END_PORTFOLIO_EX
+

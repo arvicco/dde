@@ -1,0 +1,43 @@
+
+Могу предложить код на Delphi для автоматического старта экспорта по DDE из Quik. 
+
+function FindMenuItemByPart(Menu: HMENU; Name: string): Integer;
+var
+  i: Integer;
+  Buffer: string;
+begin
+  Result := -1;
+
+  for i := 0 to GetMenuItemCount(Menu)-1 do begin
+    Buffer := StringOfChar(#0, 1024);
+    SetLength(Buffer, GetMenuString(Menu, i, PChar(Buffer), 1023, MF_BYPOSITION));
+
+    if (LeftStr(Buffer, Length(Name)) = Name) then begin
+      Result := i;
+      break;
+    end;
+  end;
+end;
+
+procedure RunQuikExport();
+var
+   Quik: HWND;
+   MainMenu: HMENU;
+   SubMenu: HMENU;
+   MenuItem: Integer;
+   Temp: Integer;
+begin
+   Quik := FindWindow('InfoClass', nil);
+   if (Quik = 0) then Exit;
+
+   MainMenu := GetMenu(Quik);
+   Temp := FindMenuItemByPart(MainMenu, '&Экспорт данных');
+   if (Temp = -1) then Exit;
+
+   SubMenu := GetSubMenu(MainMenu, Temp);
+   Temp := FindMenuItemByPart(SubMenu, 'Начать экспорт таблиц по &DDE');
+   if (Temp = -1) then Exit;
+
+   MenuItem := GetMenuItemID(SubMenu, Temp);
+   PostMessage(Quik, WM_COMMAND, MenuItem, 0);
+end; 
