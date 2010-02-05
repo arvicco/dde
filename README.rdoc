@@ -2,7 +2,7 @@
 
 Server that mimics Excel receiving XLTable data via DDE protocol
 
-Work in progress, do ton use it yet...
+Work in progress, don't use it just yet...
 
 == Note on Patches/Pull Requests
  
