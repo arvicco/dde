@@ -1,9 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 module DDETest
-  def dde_callback
-    @dde_callback ||= proc {|*args| }
-  end
 
   describe DDE::Server do
     before(:each ){ @server = DDE::Server.new }
