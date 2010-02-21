@@ -1,6 +1,13 @@
 module DDE
 
+  Types = Win::DDE::TYPES
+  Flags = Win::DDE::FLAGS
+
   module Errors                             # :nodoc:
+    def self.[](error_code)
+      Win::DDE::ERRORS[error_code]
+    end
+
     class InitError < RuntimeError          # :nodoc:
     end
     class FormatError < RuntimeError        # :nodoc:
@@ -9,7 +16,8 @@ module DDE
     end
     class ServiceError < RuntimeError        # :nodoc:
     end
-
+    class ClientError < RuntimeError        # :nodoc:
+    end
   end
 
   # Class encapsulates DDE application. DDE::App serves as a base for more specific types,
@@ -38,7 +46,7 @@ module DDE
         status = e
       end
       raise DDE::Errors::InitError, "DdeInitialize failed with: #{status}" unless @id && status == DMLERR_NO_ERROR
-      true
+      self
     end
 
     # (Re)Initialize application with DDEML library, providing attached dde callback
@@ -46,7 +54,11 @@ module DDE
       # Uninitialize app with DDEML library and clear instance id if uninitialization successful
       raise DDE::Errors::InitError, "DdeUninitialize failed" unless @id && dde_uninitialize(@id)
       @id = nil
-      true
+      self
+    end
+
+    def error( message = nil )
+      raise message ? message : DDE::Errors[dde_get_last_error(@id)]
     end
 
     def dde_active?

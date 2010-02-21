@@ -18,11 +18,11 @@ module DDE
 
       begin
         if string_or_handle.is_a? String
-          @handle = dde_create_string_handle(@instance_id, string_or_handle, @code_page)
           @name = string_or_handle
+          error unless @handle = dde_create_string_handle(@instance_id, @name, @code_page)
         else
           @handle = string_or_handle
-          @name = dde_query_string(@instance_id, @handle, @code_page)
+          error unless @name = dde_query_string(@instance_id, @handle, @code_page)
         end
       rescue => e
       end

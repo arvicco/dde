@@ -34,6 +34,7 @@ Spec::Runner.configure { |config| config.extend(SpecMacros) }
 module DDETest
 
   include Win::DDE
+#  @@monitor = DDE::Monitor.new
 
   TEST_IMPOSSIBLE = 'Impossible'
 

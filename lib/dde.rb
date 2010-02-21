@@ -8,6 +8,8 @@ require 'dde/dde_string'
 require 'dde/app'
 require 'dde/xl_table'
 require 'dde/server'
+require 'dde/client'
+require 'dde/monitor'
 
 server = DDE::Server.new  # create server with default name 'excel'
 
@@ -27,18 +29,18 @@ dde_callback = lambda do |type, format, conv, hsz1, hsz2, data_handle, data1, da
       #             dwData2:: Specifies whether the client is the same application instance as the server. If the
       #                       parameter is 1, the client is the same instance. If the parameter is 0, the client
       #                       is a different instance.
-      #             *Returns*:: A server callback function should return TRUE to allow the client to establish a
+      #             *Returns*:: A server callback function should return TRUE(1) to allow the client to establish a
       #                         conversation on the specified service name and topic name pair, or the function
-      #                         should return FALSE to deny the conversation. If the callback function returns TRUE
+      #                         should return FALSE to deny the conversation. If the callback function returns TRUE(1)
       #                         and a conversation is successfully established, the system passes the conversation
       #              todo:      handle to the server by issuing an XTYP_CONNECT_CONFIRM transaction to the server's
       #                         callback function (unless the server specified the CBF_SKIP_CONNECT_CONFIRMS flag
       #                         in the DdeInitialize function).
       if hsz2 == server.service
-        true     # Yes, this server supports requested (name) handle
+        1 # instead of true     # Yes, this server supports requested (name) handle
       else
         cout "Unable to process connection request for #{hsz2}, service is #{server.service}\n"
-        false    # No, server does not support requested (name) handle
+        0 # instead of false    # No, server does not support requested (name) handle
       end
     when XTYP_POKE  # Client initiated XTYP_POKE transaction to push unsolicited data to the server
       #             format:: Specifies the format of the data sent from the server.
@@ -53,22 +55,22 @@ dde_callback = lambda do |type, format, conv, hsz1, hsz2, data_handle, data1, da
       #              # CHAR buf[200];
       flag = server.table.get_data(data_handle) # extract client's DDE data into server's xltable
       if flag
-                   # // Преобразуем HSZ в string (название топика и итема в формате [topic]item)
-    #                  DdeQueryStringA(server.GetId(),hsz1,buf,200,CP_WINANSI);
-    #                  server.xltable.GetBuf(buf);
-    #                  // Помещаем таблицу в очередь
-    #                  WaitForSingleObject(hMutex1,INFINITE);
-    #                      q.push(server.xltable);
-    #                  ReleaseMutex(hMutex1);
-    #                  // Позволяем запустится потоку вывода таблицы на экран
-    #                  ReleaseSemaphore(hSemaphore,1,NULL);
-    #
+        # // Преобразуем HSZ в string (название топика и итема в формате [topic]item)
+        #                  DdeQueryStringA(server.GetId(),hsz1,buf,200,CP_WINANSI);
+        #                  server.xltable.GetBuf(buf);
+        #                  // Помещаем таблицу в очередь
+        #                  WaitForSingleObject(hMutex1,INFINITE);
+        #                      q.push(server.xltable);
+        #                  ReleaseMutex(hMutex1);
+        #                  // Позволяем запустится потоку вывода таблицы на экран
+        #                  ReleaseSemaphore(hSemaphore,1,NULL);
+        #
         DDE_FACK  # Transaction successful
       else
         cout "Unable to receive dataprocess connection request for #{hsz2}, server handle is #{server.handle}\n"
         DDE_FNOTPROCESSED   # Transaction NOT successful
       end
-        #              }
+    #              }
     #              return (HDDEDATA)TRUE;			 // Признак неудачной транзакции
     #          }
     #      case XTYP_DISCONNECT:		// Отключение DDE-клиента

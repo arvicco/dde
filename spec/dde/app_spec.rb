@@ -21,16 +21,20 @@ module DDETest
     describe '#start_dde' do
       it 'starts DDE with callback and default init_flags' do
         res = @app.start_dde {|*args|}
-        res.should == true
+        res.should be_true
         @app.id.should be_an Integer
         @app.id.should_not == 0
         @app.init_flags.should == APPCLASS_STANDARD
         @app.dde_active?.should == true
       end
 
+      it 'returns self if success (allows method chain)' do
+        @app.start_dde {|*args|}.should == @app
+      end
+
       it 'starts DDE with callback and given init_flags' do
         res = @app.start_dde( APPCLASS_STANDARD | CBF_FAIL_CONNECTIONS ){|*args|}
-        res.should == true
+        res.should be_true
         @app.id.should be_an Integer
         @app.id.should_not == 0
         @app.init_flags.should == APPCLASS_STANDARD | CBF_FAIL_CONNECTIONS
@@ -45,7 +49,7 @@ module DDETest
         @app.start_dde {|*args| 1}
         old_id = @app.id
         res = @app.start_dde( APPCLASS_STANDARD | CBF_FAIL_CONNECTIONS ){|*args| 2}
-        res.should == true
+        res.should be_true
         @app.id.should == old_id
         @app.init_flags.should == APPCLASS_STANDARD | CBF_FAIL_CONNECTIONS
         @app.dde_active?.should == true
@@ -66,6 +70,10 @@ module DDETest
 
         @app.stop_dde
         @app.init_flags.should == APPCLASS_STANDARD | CBF_FAIL_CONNECTIONS
+      end
+
+      it 'returns self if success (allows method chain)' do
+        @app.start_dde{|*args|}.stop_dde.should == @app
       end
 
       it 'raises InitError if dde was not active first' do
