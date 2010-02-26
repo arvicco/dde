@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{dde}
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["arvicco"]
@@ -25,6 +25,8 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION",
+     "bin/dde_main",
+     "dde.gemspec",
      "doc/XLTable_format.doc",
      "doc/dde_formats.doc",
      "doc/ddeml.d.txt",
@@ -38,6 +40,7 @@ Gem::Specification.new do |s|
      "lib/dde/dde_string.rb",
      "lib/dde/monitor.rb",
      "lib/dde/server.rb",
+     "lib/dde/xl_server.rb",
      "lib/dde/xl_table.rb",
      "misc/QuickAutostart.vbs",
      "misc/alioshinov/builds/DDE_Server2.exe",
@@ -129,7 +132,9 @@ Gem::Specification.new do |s|
      "spec/dde/client_spec.rb",
      "spec/dde/dde_string_spec.rb",
      "spec/dde/monitor_spec.rb",
+     "spec/dde/server_shared.rb",
      "spec/dde/server_spec.rb",
+     "spec/dde/xl_server_spec.rb",
      "spec/dde/xl_table_spec.rb",
      "spec/spec.opts",
      "spec/spec_helper.rb"
