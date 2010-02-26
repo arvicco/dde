@@ -1,24 +1,29 @@
 #!/usr/bin/env ruby
 
-require File.dirname(__FILE__) + '/../lib/dde'
+lib = File.join(File.dirname(__FILE__), '..', 'lib')
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include? lib
+
+require 'dde'
 
 # console output redirection (may need to wrap it in synchronization code, etc)
 def cout *args
   print *args
 end
 
+cout "Starting script\n"
+
 require 'win/gui/message'
 
 include Win::GUI::Message
 include Win::DDE
 
-server = DDE::XlServer.new  # create server with default name 'excel'
+server = DDE::XlServer.new  # create server
 
-# std::queue<XlTable> q;				// очередь, содержит таблицы, которые необходимо вывести на консоль
-#  XlTable xlt;						// содержит выводимую таблицу
+# std::queue<XlTable> q;				// Queue contains the tables to output
 
 #  HDDEDATA CALLBACK DdeCallback(UINT uType, UINT uFmt, HCONV hConv, HSZ hsz1, HSZ hsz2,
 #                                      HDDEDATA hData, DWORD dwData1, DWORD dwData2)
+
 dde_callback = lambda do |type, format, conv, hsz1, hsz2, data_handle, data1, data2|
   case type
     when XTYP_CONNECT  # Request to connect from client, creating data exchange channel
@@ -38,10 +43,10 @@ dde_callback = lambda do |type, format, conv, hsz1, hsz2, data_handle, data1, da
       #                         callback function (unless the server specified the CBF_SKIP_CONNECT_CONFIRMS flag
       #                         in the DdeInitialize function).
 
-      if hsz2 == server.service
+      if hsz2 == server.service.handle
         1 # instead of true     # Yes, this server supports requested (name) handle
       else
-        cout "Unable to process connection request for #{hsz2}, service is #{server.service}\n"
+        cout "Unable to process connection request for #{hsz2}, service handle is #{server.service}\n"
         DDE_FNOTPROCESSED # 0 instead of false    # No, server does not support requested (name) handle
       end
 
@@ -62,13 +67,14 @@ dde_callback = lambda do |type, format, conv, hsz1, hsz2, data_handle, data1, da
         # Converting hsz1 into "[topic]item" string and
         server.table.topic_item = dde_query_string(server.id, hsz1)
         server.table.draw # Simply printing it for now, no queues
-        #                  // Помещаем таблицу в очередь
+        #                  // Placing table into print queue
         #                  WaitForSingleObject(hMutex1,INFINITE);
         #                      q.push(server.xltable);
         #                  ReleaseMutex(hMutex1);
-        #                  // Позволяем запустится потоку вывода таблицы на экран
+        #                  // Allowing the table output thread to start...
         #                  ReleaseSemaphore(hSemaphore,1,NULL);
         #
+        cout "Transaction finished"
         DDE_FACK  # Transaction successful
       else
         cout "Unable to receive dataprocess connection request for #{hsz2}, server handle is #{server.handle}\n"
@@ -92,12 +98,14 @@ dde_callback = lambda do |type, format, conv, hsz1, hsz2, data_handle, data1, da
   end
 end
 
-# Staring server
+# Staring service with default name 'excel'
+cout "Starting DDE service 'excel'\n"
 server.start_service &dde_callback
 
 msg = Msg.new  # pointer to Msg FFI struct
 
 # Starting message loop (necessary for DDE processing)
+cout "Starting message loop\n"
 while msg = get_message(msg)
     translate_message(msg);
     dispatch_message(msg);
