@@ -1,8 +1,5 @@
 module DDE
 
-  Types = Win::DDE::TYPES
-  Flags = Win::DDE::FLAGS
-
   module Errors                             # :nodoc:
     def self.[](error_code)
       Win::DDE::ERRORS[error_code]
@@ -33,6 +30,9 @@ module DDE
       @init_flags = init_flags
 
       start_dde init_flags, &dde_callback if dde_callback
+
+      # todo: Destructor to ensure Dde instance is uninitialized and string handles freed (is it even working?)
+      #ObjectSpace.define_finalizer self, ->(id) { stop_dde }
     end
 
     # (Re)Initialize application with DDEML library, providing attached dde callback
@@ -40,25 +40,41 @@ module DDE
     def start_dde( init_flags=nil, &dde_callback )
       @init_flags = init_flags || @init_flags || APPCLASS_STANDARD
 
-      begin
+      try "Starting DDE" do
         @id, status = dde_initialize @id, @init_flags, &dde_callback
-      rescue => e
-        status = e
+        error(status) unless @id && status == DMLERR_NO_ERROR
       end
-      raise DDE::Errors::InitError, "DdeInitialize failed with: #{status}" unless @id && status == DMLERR_NO_ERROR
-      self
     end
 
     # (Re)Initialize application with DDEML library, providing attached dde callback
     def stop_dde
-      # Uninitialize app with DDEML library and clear instance id if uninitialization successful
-      raise DDE::Errors::InitError, "DdeUninitialize failed" unless @id && dde_uninitialize(@id)
-      @id = nil
+      try "Stopping DDE" do
+        error unless @id && dde_uninitialize(@id) # Uninitialize app with DDEML library
+        @id = nil                                 # Clear instance id if uninitialization successful
+      end
+    end
+
+    # Expects a block, yields to it inside a rescue block, raises given error_type with extended fail message.
+    # Returns self in case of success (to enable method chaining).
+    def try( action, error_type=DDE::Errors::InitError )
+      begin
+        yield
+      rescue => e
+        raise error_type, action + " failed with: #{e}"
+      end
       self
     end
 
+    # Raises Runtime error with message based on given message (DdeGetLastError message if no message given)
     def error( message = nil )
-      raise message ? message : DDE::Errors[dde_get_last_error(@id)]
+      raise case message
+        when Integer
+          DDE::Errors[message]
+        when nil
+          DDE::Errors[dde_get_last_error(@id)]
+        else
+          message
+      end
     end
 
     def dde_active?

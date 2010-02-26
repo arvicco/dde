@@ -8,7 +8,7 @@ module DDE
 
 
   # XLTable class represents a single chunk of DDE data formatted as an Excel table
-  class XLTable
+  class XlTable
     include Win::DDE
 
     # Received data types
@@ -22,7 +22,7 @@ module DDE
     TDT_TABLE = 16
 
 
-    attr_accessor :buf # topic_item
+    attr_accessor :topic_item # topic_item
 
     def initialize
       @table_data = []    # Array contains Arrays of Strings
@@ -52,7 +52,7 @@ module DDE
     end
 
     def get_data(dde_handle)
-      conv = DDE::Conv.new  # Union for data conversion
+#      conv = DDE::Conv.new  # Union for data conversion
 
       # Copy DDE data from dde_handle (FFI::MemoryPointer is returned)
       return nil unless data = dde_get_data(dde_handle) # raise 'DDE data not extracted'

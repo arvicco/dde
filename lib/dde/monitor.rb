@@ -16,7 +16,7 @@ module DDE
               MF_SENDMSGS         # monitor sent DDE messages
 
       callback ||= lambda do |*args|
-        p args.unshift(DDE::Types[args.shift]).push(DDE::Flags[args.pop])
+        p args.unshift(Win::DDE::TYPES[args.shift]).push(Win::DDE::FLAGS[args.pop])
         1
       end
       
