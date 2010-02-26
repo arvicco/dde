@@ -13,6 +13,8 @@ begin
     gem.add_dependency "win_gui", ">= 0.1.0"
     gem.add_development_dependency "rspec", ">= 1.2.9"
     gem.add_development_dependency "cucumber", ">= 0"
+    gem.files.reject! { |fn| fn.include? "misc" }
+
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
