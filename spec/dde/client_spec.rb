@@ -1,13 +1,38 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require File.expand_path(File.dirname(__FILE__) + '/app_shared')
 
 module DDETest
 
-  describe DDE::Client do
-#    before(:all){@monitor = DDE::Monitor.new}
-#    after(:all){@monitor.stop_dde}
+  def start_callback_recorder
+    @client_calls = []
+    @server_calls = []
+    @client = DDE::Client.new {|*args| @client_calls << extract_values(*args); 1}
+    @server = DDE::Server.new do |*args|
+      @server_calls << extract_values(*args)  #[Win::DDE::TYPES[args.shift]]+args; 1}
+      #puts "#{Time.now.strftime('%T.%6N')} #{extract_values(*args)}"
+      args.first == XTYP_CONNECT ? 1 : DDE_FACK
+    end
+    @server.start_service('service')
+  end
 
-    before(:each ){ @client = DDE::Client.new }
-#    after(:each ){ @client.stop_dde}
+  def stop_callback_recorder
+    @client.stop_conversation if @client.conversation_active?
+    @server.stop_service if @server.service_active?
+    @server.stop_dde if @server.dde_active?
+  end
+
+  def extract_values(type, format, conv, hsz1, hsz2, data, data1, data2)
+    [Win::DDE::TYPES[type], format, conv,
+     dde_query_string(@client.id, hsz1),
+     dde_query_string(@client.id, hsz2),
+     data, data1, data2]
+  end
+
+  describe DDE::Client do
+    before(:each){ @client = DDE::Client.new }
+    after(:each){ @client.stop_dde if @client.dde_active?}
+
+    it_should_behave_like "DDE App"
 
     it 'new without parameters creates Client but does not activate DDEML' do
       @client.id.should == nil
@@ -19,14 +44,14 @@ module DDETest
     end
 
     it 'new with attached callback block creates Client and activates DDEML' do
-      client = DDE::Client.new {|*args|}
-      client.id.should be_an Integer
-      client.id.should_not == 0
-      client.dde_active?.should == true
-      client.conversation.should == nil
-      client.conversation_active?.should == false
-      client.service.should == nil
-      client.topic.should == nil
+      @client = DDE::Client.new {|*args|}
+      @client.id.should be_an Integer
+      @client.id.should_not == 0
+      @client.dde_active?.should == true
+      @client.conversation.should == nil
+      @client.conversation_active?.should == false
+      @client.service.should == nil
+      @client.topic.should == nil
     end
 
     describe '#start_conversation' do
@@ -46,11 +71,10 @@ module DDETest
       end
 
       context 'with active (initialized) DDE AND existing DDE server supporting "service" topic' do
-        before(:each )do
-          @client_calls = []
-          @server_calls = []
-          @client = DDE::Client.new {|*args| @client_calls << args; 1}
-          @server = DDE::Server.new {|*args| @server_calls << args; 1}.start_service('service')
+        before(:each ){start_callback_recorder}
+        after(:each )do
+          stop_callback_recorder
+          #p @server_calls, @client_calls    # ?????????? No XTYP_DISCONNECT ? Why ?
         end
 
         it 'starts new conversation if DDE is already activated' do
@@ -78,17 +102,18 @@ module DDETest
         it 'initiates XTYP_CONNECT transaction to service`s callback' do
           @client.start_conversation 'service', 'topic'
 
-          @server_calls.first[0].should == XTYP_CONNECT
-          @server_calls.first[3].should == @client.topic.handle
-          @server_calls.first[4].should == @client.service.handle
+          @server_calls.first[0].should == 'XTYP_CONNECT'
+          @server_calls.first[3].should == @client.topic
+          @server_calls.first[4].should == @client.service
         end
 
         it 'if server confirms connect, XTYP_CONNECT_CONFIRM transaction to service`s callback follows' do
           @client.start_conversation 'service', 'topic'
 
-          @server_calls[1][0].should == XTYP_CONNECT_CONFIRM
-          @server_calls[1][3].should == @client.topic.handle
-          @server_calls[1][4].should == @client.service.handle
+          p @server_calls, @client_calls    # ?????????? No XTYP_DISCONNECT ? Why ?
+          @server_calls[1][0].should == 'XTYP_CONNECT_CONFIRM'
+          @server_calls[1][3].should == @client.topic
+          @server_calls[1][4].should == @client.service
         end
 
         it 'client`s callback receives no transactions' do
@@ -123,15 +148,13 @@ module DDETest
           @client.conversation_active?.should == false
         end
 
-      end
+      end # context 'with inactive (uninitialized) DDE:'
 
       context 'with active (initialized) DDE AND existing DDE server supporting "service" topic' do
-        before(:each )do
-          @client_calls = []
-          @server_calls = []
-          @client = DDE::Client.new {|*args| @client_calls << args; 1}
-          @server = DDE::Server.new {|*args| @server_calls << args; 1}
-          @server.start_service('service')
+        before(:each ){start_callback_recorder}
+        after(:each )do
+          stop_callback_recorder
+          #p @server_calls, @client_calls    # ?????????? No XTYP_DISCONNECT ? Why ?
         end
 
         it 'fails to stop conversation' do
@@ -165,12 +188,12 @@ module DDETest
             pending
             @client.stop_conversation
             p @server_calls, @client_calls    # ?????????? No XTYP_DISCONNECT ? Why ?
-            @server_calls.last[0].should == XTYP_DISCONNECT
+            @server_calls.last[0].should == 'XTYP_DISCONNECT'
           end
 
-        end
+        end # context 'conversation already started'
 
-      end
+      end # context 'with active (initialized) DDE AND existing DDE server supporting "service" topic'
     end
   end
 end

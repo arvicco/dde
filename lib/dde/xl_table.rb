@@ -1,11 +1,11 @@
 module DDE
   extend FFI::Library  # todo: < Array ?
-  class Conv < FFI::Union
-    layout( :w, :ushort, # word should be 2 bytes, not 8
-            :d, :double, # it is 8 bytes
-            :b, [:char, 8]) # it is 8 bytes
-  end
-
+#  class Conv < FFI::Union
+#    layout( :w, :ushort, # word should be 2 bytes, not 8
+#            :d, :double, # it is 8 bytes
+#            :b, [:char, 8]) # it is 8 bytes
+#  end
+#
 
   # XLTable class represents a single chunk of DDE data formatted as an Excel table
   class XlTable
@@ -32,21 +32,26 @@ module DDE
             TDT_TABLE => 'TDT_TABLE'
     }
 
-    attr_accessor :topic_item # topic_item
+    attr_accessor :topic, # topic prefix
+                  :time, # time spent parsing last transaction data
+                  :total_time, # total time spent parsing data
+                  :num_trans # number of data transactions
 
     def initialize
-      @table_data = []    # Array contains Arrays of Strings
+      @table = []    # Array contains Arrays of Strings
       @col = 0
       @row = 0
+      @total_time = 0
+      @total_records = 0
       # omitting separators for now
     end
 
     # tests if table data is empty or contains data in inconsistent state
     def empty?
-      @table_data.empty? ||
+      @table.empty? ||
               @row == 0 || @col == 0 ||
-              @row != @table_data.size ||
-              @col != @table_data.first.size  # assumes first element is also an Array
+              @row != @table.size ||
+              @col != @table.first.size  # assumes first element is also an Array
     end
 
     def data?;
@@ -55,118 +60,110 @@ module DDE
 
     def draw
       return false if empty?
-
+      Encoding.default_external = 'cp866'
       # omitting separator gymnastics for now
       cout "-----\n"
-      @table_data.each{|row| row.each {|col| cout col, " "}; cout "\n"}
+      @table.each{|row| cout @topic; row.each {|col| cout " #{col}"}; cout "\n"}
     end
 
     def get_data(dde_handle)
-#      conv = DDE::Conv.new  # Union for data conversion
+      start = Time.now
 
-      # Copy DDE data from dde_handle (FFI::MemoryPointer is returned)
-      return nil unless data = dde_get_data(dde_handle) # raise 'DDE data not extracted'
-      offset = 0
+      @offset = 0
+      @pos = 0 #; @c=0; @r=0
 
-      # Make sure that the first block is tdtTable
-      return nil unless data.get_int16(offset) == TDT_TABLE # raise 'DDE data not TDT_TABLE'
-      offset += 2
+      return nil unless (@data = dde_get_data(dde_handle)) && # DDE data is present at given dde_handle
+      read_int == TDT_TABLE &&            # and, first data block is tdtTable
+      read_int == 4                       # and, its length is 4 bytes
 
-      # Make sure cb == 4
-      return nil unless data.get_int16(offset) == 4 # raise 'TDT_TABLE data length wrong'
-      offset += 2
+      @row = read_int
+      @col = read_int
+      return nil unless @row != 0 && @col != 0  # Make sure nonzero row and col
 
-      @row = data.get_int16(offset)
-      @col = data.get_int16(offset+2)
-      offset += 4
-#p "row, col", @row, @col
+      @table = Array.new(@row){||Array.new}
 
-      # Make sure nonzero row and col
-      return nil if @row == 0 || @col == 0   # raise 'col or row zero in TDT_TABLE'
+      while @offset < @data.size
+        type = read_int         # Next data field(s) type
+        byte_size = read_int    # Next data field(s) length in bytes
 
-      @table_data = Array.new(@row){||Array.new}
-
-      r = 0
-      c = 0
-      while offset < data.size
-        type = data.get_int16(offset)   # Next data field(s) type
-        cb = data.get_int16(offset+2)   # Next data field(s) length in bytes
-        offset += 4
-
-#p "type #{TDT_TYPES[type]}, cb #{cb}, row #{r}, col #{c}"
+#p "type #{TDT_TYPES[type]}, cb #{byte_size}, row #{@pos/@col}, col #{@pos%@col}"
         case type
-          when TDT_FLOAT       # Float, 8 bytes per field
-            (cb/8).times do
-              @table_data[r][c] = data.get_float64(offset)
-              offset += 8
-              c += 1
-              if c == @col # end of row
-                c = 0
-                r += 1
-              end
+          when TDT_STRING       # Strings, length byte followed by chars, no zero termination
+            field_end = @offset + byte_size
+            while @offset < field_end do
+              length = read_char
+              self.table = @data.get_bytes(@offset, length) #read_bytes(length)#.force_encoding('CP1251').encode('CP866')
+              @offset += length
             end
-          when TDT_STRING
-            end_field = offset + cb
-            while offset < end_field do
-              length = data.get_int8(offset)
-              offset += 1
-               @table_data[r][c] = data.get_bytes(offset, length)
-              offset += length
-              c += 1
-              if c == @col # end of row
-                c = 0
-                r += 1
-              end
+          when TDT_FLOAT        # Float, 8 bytes (used to represent Integers too in Quik!)
+            (byte_size/8).times do
+#              self.table = read_double
+#            end
+              float_or_int = @data.get_float64(@offset)
+              @offset += 8
+              int = float_or_int.round
+              self.table = float_or_int == int ? int : float_or_int
             end
-          when TDT_BOOL        # Bool, 2 bytes per field
-            (cb/2).times do
-              @table_data[r][c] = data.get_int16(offset) == 0
-              offset += 2
-              c += 1
-              if c == @col # end of row
-                c = 0
-                r += 1
-              end
-            end
-          when TDT_ERROR        # Error enum, 2 bytes per field
-            (cb/2).times do
-              @table_data[r][c] = "Error:#{data.get_int16(offset)}"
-              offset += 2
-              c += 1
-              if c == @col # end of row
-                c = 0
-                r += 1
-              end
-            end
-          when TDT_BLANK        # Number of blank cells, 2 bytes per field
-            (cb/2).times do
-              blanks = data.get_int16(offset)
-              offset += 2
-              blanks.times do
-                @table_data[r][c] = ""
-                c += 1
-                if c == @col # end of row
-                  c = 0
-                  r += 1
-                end
-              end
-            end
-          when TDT_INT        # Int, 2 bytes per field
-            (cb/2).times do
-              @table_data[r][c] = data.get_int16(offset) == 0
-              offset += 2
-              c += 1
-              if c == @col # end of row
-                c = 0
-                r += 1
-              end
-            end
+          when TDT_BLANK        # Number of blank cells, 2 bytes
+            (byte_size/2).times { read_int.times { self.table = "" } }
+          when TDT_SKIP         # Number of cells to skip, 2 bytes - in Quik, it means that these cells contain 0
+            (byte_size/2).times { read_int.times { self.table = 0 } }
+          when TDT_INT          # Int, 2 bytes
+            (byte_size/2).times { self.table = read_int }
+          when TDT_BOOL         # Bool, 2 bytes 0/1
+            (byte_size/2).times { self.table = read_int == 0 }
+          when TDT_ERROR        # Error enum, 2 bytes
+            (byte_size/2).times { self.table = "Error:#{read_int}" }
           else
+            cout "Type: #{type}, #{TDT_TYPES[type]}"
             return nil
         end
       end
-#TODO:	free FFI::Pointer ?  delete []data;                          // Free memory
+#TODO:	free FFI::Pointer ?  delete []data;  // Free memory
+      @time = Time.now - start
+      @total_time += @time
+      @total_records += @row
       true      # Data acquisition successful
     end
+
+    def timer
+      cout "Last: #{@row} in #{@time} s(#{@time/@row} s/rec), total: #{@total_records} in  #{
+              @total_time} s(#{@total_time/@total_records} s/rec)\n"
+    end
+
+    def read_char
+      @offset += 1
+      @data.get_int8(@offset-1)
+    end
+
+    def read_int
+      @offset += 2
+      @data.get_int16(@offset-2)
+    end
+
+    def read_double
+      @offset += 8
+      @data.get_float64(@offset-8)
+    end
+
+    def read_bytes(length=1)
+      @offset += length
+      @data.get_bytes(@offset-length, length)
+    end
+
+    def table=(value)
+#      @table[@r][@c] = value
+#      todo: Add code for adding value to data row here (pack?)
+#      @c+=1
+#      if @c == @col
+#        @c =0
+#        @r+=1
+#      end
+#      todo: Add code for (sync!) publishing of assembled data row here (bunny? rosetta_queue?)     
+
+      @table[@pos/@col][@pos%@col] = value
+      @pos += 1
+    end
+
   end
 end

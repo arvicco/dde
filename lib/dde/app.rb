@@ -24,16 +24,22 @@ module DDE
 
     attr_reader :id, :init_flags
 
-    # Creates new DDE application and starts DDE instance
-    # if dde_callback block is attached
+    # Creates new DDE application (and starts DDE instance if dde_callback block is attached)
     def initialize( init_flags=nil, &dde_callback )
       @init_flags = init_flags
 
       start_dde init_flags, &dde_callback if dde_callback
 
-      # todo: Destructor to ensure Dde instance is uninitialized and string handles freed (is it even working?)
-      #ObjectSpace.define_finalizer self, ->(id) { stop_dde }
     end
+#    # todo: Destructor to ensure Dde instance is uninitialized and string handles freed...
+#      ObjectSpace.define_finalizer( self, self.class.finalize))
+#    end
+#
+#    # need to have class method, otherwise proc traps reference to instance (self) and the object
+#    # is never garbage-collected (http://www.mikeperham.com/2010/02/24/the-trouble-with-ruby-finalizers/)
+#    def self.finalize()
+#      proc { stop_dde } #does NOT work since stop_dde is instance method (depends on self)
+#    end
 
     # (Re)Initialize application with DDEML library, providing attached dde callback
     # either preserved @init_flags or init_flags argument are used
@@ -49,7 +55,8 @@ module DDE
     # (Re)Initialize application with DDEML library, providing attached dde callback
     def stop_dde
       try "Stopping DDE" do
-        error unless @id && dde_uninitialize(@id) # Uninitialize app with DDEML library
+        error "DDE not started" unless dde_active?
+        error unless dde_uninitialize(@id)   # Uninitialize app with DDEML library
         @id = nil                                 # Clear instance id if uninitialization successful
       end
     end

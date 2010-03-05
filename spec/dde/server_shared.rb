@@ -1,5 +1,10 @@
+require File.expand_path(File.dirname(__FILE__) + '/app_shared')
+
 module DDETest
   shared_examples_for "DDE Server" do
+
+    it_should_behave_like "DDE App"
+
     it 'new without parameters creates Server but does not activate DDEML or start service' do
       @server.id.should == nil
       @server.service.should == nil
@@ -8,12 +13,12 @@ module DDETest
     end
 
     it 'new with attached callback block creates Server and activates DDEML, but does not start service' do
-      server = described_class.new {|*args|}
-      server.id.should be_an Integer
-      server.id.should_not == 0
-      server.dde_active?.should == true
-      server.service.should == nil
-      server.service_active?.should == false
+      @server = described_class.new {|*args|}
+      @server.id.should be_an Integer
+      @server.id.should_not == 0
+      @server.dde_active?.should == true
+      @server.service.should == nil
+      @server.service_active?.should == false
     end
 
     describe '#start_service' do
@@ -33,11 +38,6 @@ module DDETest
         it 'returns self if success (allows method chain)' do
           res = @server.start_service('myservice') {|*args|}
           res.should == @server
-        end
-
-        it 'fails to start new service without callback block' do
-          lambda{@server.start_service('myservice')}.should raise_error DDE::Errors::ServiceError
-          @server.service_active?.should == false
         end
 
       end
@@ -77,6 +77,7 @@ module DDETest
 
         context 'with already registered DDE service: "myservice"' do
           before(:each){ @server.start_service('myservice')}
+          after(:each){ @server.stop_service if @server.service_active?}
 
           it 'stops previously registered service' do
             @server.stop_service.should be_true

@@ -6,7 +6,7 @@ module DDETest
     it 'starts out empty and without item/topic' do
       table = DDE::XlTable.new
       table.should be_empty
-      table.buf.should == nil
+      table.topic.should == nil
     end
   end
 end

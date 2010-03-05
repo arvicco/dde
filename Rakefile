@@ -10,7 +10,7 @@ begin
     gem.email = "arvitallian@gmail.com"
     gem.homepage = "http://github.com/arvicco/dde"
     gem.authors = ["arvicco"]
-    gem.add_dependency "win_gui", ">= 0.1.0"
+    gem.add_dependency "win", ">= 0.1.18"
     gem.add_development_dependency "rspec", ">= 1.2.9"
     gem.add_development_dependency "cucumber", ">= 0"
     gem.files.reject! { |fn| fn.include? "misc" }
