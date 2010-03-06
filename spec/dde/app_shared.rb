@@ -3,20 +3,20 @@ module DDETest
     before(:each ){ @app = described_class.new }
     after(:each ){ @app.stop_dde if @app.dde_active?}
 
-    it 'starts with nil id and flags if no arguments given' do
-      @app.id.should == nil
-      @app.init_flags.should == nil
-      @app.dde_active?.should == false
-    end
+      it 'starts with nil id and flags if no arguments given' do
+        @app.id.should == nil
+        @app.init_flags.should == nil
+        @app.dde_active?.should == false
+      end unless described_class == DDE::Monitor
 
-    it 'starts DDE (initializes as STANDARD DDE app) with given callback block' do
-      @app = described_class.new {|*args|}
-      @app.id.should be_an Integer
-      @app.id.should_not == 0
-      @app.init_flags.should == APPCLASS_STANDARD
-      @app.dde_active?.should == true
-    end
-
+      it 'starts DDE (initializes as STANDARD DDE app) with given callback block' do
+        @app = described_class.new {|*args|}
+        @app.id.should be_an Integer
+        @app.id.should_not == 0
+        @app.init_flags.should == APPCLASS_STANDARD
+        @app.dde_active?.should == true
+      end unless described_class == DDE::Monitor
+    
     describe '#start_dde' do
       it 'starts DDE with callback and default init_flags' do
         res = @app.start_dde {|*args|}
@@ -25,7 +25,7 @@ module DDETest
         @app.id.should_not == 0
         @app.init_flags.should == APPCLASS_STANDARD
         @app.dde_active?.should == true
-      end
+      end unless described_class == DDE::Monitor
 
       it 'returns self if success (allows method chain)' do
         @app.start_dde {|*args|}.should == @app
@@ -78,7 +78,7 @@ module DDETest
       it 'raises InitError if dde was not active first' do
         lambda{ @app.stop_dde}.should raise_error DDE::Errors::InitError
       end
-    end
+    end unless described_class == DDE::Monitor
 
 
   end

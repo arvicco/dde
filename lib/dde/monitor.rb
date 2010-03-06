@@ -16,11 +16,30 @@ module DDE
               MF_SENDMSGS         # monitor sent DDE messages
 
       callback ||= lambda do |*args|
-        p args.unshift(Win::DDE::TYPES[args.shift]).push(Win::DDE::FLAGS[args.pop])
+        puts "#{Time.now.strftime('%T.%6N')} #{extract_values(*args)}"
         1
       end
-      
+
       super init_flags, &callback
+    end
+
+    def extract_values(*args)
+      values = [] 
+      args.each do |arg|
+        #Zero if zero arg
+        value = 0 if arg == 0
+        
+        #Trying to interpete arg as a DDE string
+        value ||= dde_query_string(@id, arg)
+
+        #Trying to interpete arg as Win::DDE constant
+        value ||= Win::DDE.constants(false).inject(nil) do |res, const|
+          arg == Win::DDE.const_get(const) ? const : res
+        end
+        
+        values << (value || arg)
+      end
+      values
     end
   end
 end

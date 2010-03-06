@@ -33,4 +33,4 @@ end
 
 p calls.map{|c| c.map{|e|e.respond_to?(:address) ? e.address : (Win::DDE::TYPES[e] || e)}}
 
-p Win::DDE::ERRORS[DdeGetLastError(id)]
+p Win::DDE::ERRORS[DdeGetLastError($server.id)]
