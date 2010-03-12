@@ -3,6 +3,8 @@ module DDE
   # Class encapsulates DDE Monitor that prints all DDE transactions to console
   class Monitor < App
 
+    attr_accessor :print, :calls
+
     # Creates new DDE monitor instance
     def initialize(init_flags=nil, &callback)
       init_flags ||=
@@ -15,35 +17,45 @@ module DDE
               MF_POSTMSGS      |  # monitor posted DDE messages
               MF_SENDMSGS         # monitor sent DDE messages
 
+      @calls = []
+
       callback ||= lambda do |*args|
-        puts "#{Time.now.strftime('%T.%6N')} #{extract_values(*args)}"
-        1
+        time = Time.now.strftime('%T.%6N')
+        values = extract_values(*args)
+        @calls << [time, values]
+        puts "#{time} #{values}" if @print
+        DDE_FACK
       end
 
       super init_flags, &callback
     end
 
     def extract_values(*args)
-      values = []
-      args.each do |arg|
-        #Zero if zero arg
-        value = 0 if arg == 0
+      values = args.map {|arg| interprete_value(arg)}
 
-        #Trying to interpete arg as a DDE string
-        value ||= dde_query_string(@id, arg)
-
-        #Trying to interpete arg as Win::DDE constant
-        value ||= Win::DDE.constants(false).inject(nil) do |res, const|
-          arg == Win::DDE.const_get(const) ? const : res
-        end
-
-        values << (value || arg)
-      end
       # if this is a MONITOR transaction, extract hdata using the DdeAccessData
       if values.first == :XTYP_MONITOR
         data_type = case values.last
           when :MF_CALLBACKS
-            MonCbStruct
+            MonCbStruct #.new(dde_get_data(args[5]))
+          # cb:: Specifies the structure's size, in bytes.
+          # dwTime:: Specifies the Windows time at which the transaction occurred. Windows time is the number of
+          #          milliseconds that have elapsed since the system was booted.
+          # hTask:: Handle to the task (app instance) containing the DDE callback function that received the transaction.
+          # dwRet:: Specifies the value returned by the DDE callback function that processed the transaction.
+          # wType:: Specifies the transaction type.
+          # wFmt:: Specifies the format of the data exchanged (if any) during the transaction.
+          # hConv:: Handle to the conversation in which the transaction took place.
+          # hsz1:: Handle to a string.
+          # hsz2:: Handle to a string.
+          # hData:: Handle to the data exchanged (if any) during the transaction.
+          # dwData1:: Specifies additional data.
+          # dwData2:: Specifies additional data.
+          # cc:: Specifies a CONVCONTEXT structure containing language information used to share data in different languages.
+          # cbData:: Specifies the amount, in bytes, of data being passed with the transaction. This value can be
+          #          more than 32 bytes.
+          # Data:: Contains the first 32 bytes of data being passed with the transaction (8 * sizeof(DWORD)).
+
           when :MF_CONV
             MonConvStruct
           when :MF_ERRORS
@@ -59,10 +71,22 @@ module DDE
         #casting DDE data pointer into appropriate struct type
         data = data_type.new(dde_get_data(args[5]))
 
-        values = [values.first, values.last] + data.members
+        values = [values.first, values.last] + data.members.map do |member|
+          value = data[member] rescue 'plonk'
+          "#{member}: #{interprete_value(value)}"
+        end
       end
 
       values
+    end
+
+    def interprete_value(arg)
+      return arg unless arg.kind_of? Fixnum rescue return 'plAnk'
+      return 0 if arg == 0
+      #Trying to interpete arg as a DDE string
+      dde_query_string(@id, arg)\
+          || Win::DDE.constants(false).inject(nil) {|res, const| arg == Win::DDE.const_get(const) ? res || const : res }\
+          || arg
     end
   end
 end
