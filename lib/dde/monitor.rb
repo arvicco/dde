@@ -24,11 +24,11 @@ module DDE
     end
 
     def extract_values(*args)
-      values = [] 
+      values = []
       args.each do |arg|
         #Zero if zero arg
         value = 0 if arg == 0
-        
+
         #Trying to interpete arg as a DDE string
         value ||= dde_query_string(@id, arg)
 
@@ -36,9 +36,32 @@ module DDE
         value ||= Win::DDE.constants(false).inject(nil) do |res, const|
           arg == Win::DDE.const_get(const) ? const : res
         end
-        
+
         values << (value || arg)
       end
+      # if this is a MONITOR transaction, extract hdata using the DdeAccessData
+      if values.first == :XTYP_MONITOR
+        data_type = case values.last
+          when :MF_CALLBACKS
+            MonCbStruct
+          when :MF_CONV
+            MonConvStruct
+          when :MF_ERRORS
+            MonErrStruct
+          when :MF_HSZ_INFO
+            MonHszStruct
+          when :MF_LINKS
+            MonLinksStruct
+          else
+            MonMsgStruct
+        end
+
+        #casting DDE data pointer into appropriate struct type
+        data = data_type.new(dde_get_data(args[5]))
+
+        values = [values.first, values.last] + data.members
+      end
+
       values
     end
   end

@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{dde}
-  s.version = "0.2.2"
+  s.version = "0.2.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["arvicco"]
-  s.date = %q{2010-02-26}
+  s.date = %q{2010-03-06}
   s.default_executable = %q{dde_main}
   s.description = %q{Server that mimics Excel receiving XLTable data via DDE protocol}
   s.email = %q{arvitallian@gmail.com}
@@ -31,8 +31,11 @@ Gem::Specification.new do |s|
      "doc/dde_formats.doc",
      "doc/ddeml.d.txt",
      "doc/types.txt",
-     "doc/~$Table_format.doc",
-     "doc/~$e_formats.doc",
+     "exp/exp_client.rb",
+     "exp/exp_dde_monitor.rb",
+     "exp/exp_dde_server.rb",
+     "exp/exp_lib.rb",
+     "exp/exp_server.rb",
      "features/dde.feature",
      "features/step_definitions/dde_steps.rb",
      "features/support/env.rb",
@@ -44,6 +47,7 @@ Gem::Specification.new do |s|
      "lib/dde/server.rb",
      "lib/dde/xl_server.rb",
      "lib/dde/xl_table.rb",
+     "spec/dde/app_shared.rb",
      "spec/dde/app_spec.rb",
      "spec/dde/client_spec.rb",
      "spec/dde/dde_string_spec.rb",
@@ -61,7 +65,8 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{DDE server for Ruby}
   s.test_files = [
-    "spec/dde/app_spec.rb",
+    "spec/dde/app_shared.rb",
+     "spec/dde/app_spec.rb",
      "spec/dde/client_spec.rb",
      "spec/dde/dde_string_spec.rb",
      "spec/dde/monitor_spec.rb",
@@ -77,16 +82,16 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<win_gui>, [">= 0.1.0"])
+      s.add_runtime_dependency(%q<win>, [">= 0.1.18"])
       s.add_development_dependency(%q<rspec>, [">= 1.2.9"])
       s.add_development_dependency(%q<cucumber>, [">= 0"])
     else
-      s.add_dependency(%q<win_gui>, [">= 0.1.0"])
+      s.add_dependency(%q<win>, [">= 0.1.18"])
       s.add_dependency(%q<rspec>, [">= 1.2.9"])
       s.add_dependency(%q<cucumber>, [">= 0"])
     end
   else
-    s.add_dependency(%q<win_gui>, [">= 0.1.0"])
+    s.add_dependency(%q<win>, [">= 0.1.18"])
     s.add_dependency(%q<rspec>, [">= 1.2.9"])
     s.add_dependency(%q<cucumber>, [">= 0"])
   end
