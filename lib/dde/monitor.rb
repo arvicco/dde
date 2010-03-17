@@ -37,7 +37,7 @@ module DDE
       if values.first == :XTYP_MONITOR
         data_type = case values.last
           when :MF_CALLBACKS
-            MonCbStruct #.new(dde_get_data(args[5]))
+            MonCbStruct #.new(dde_get_data(args[5]).first)
           # cb:: Specifies the structure's size, in bytes.
           # dwTime:: Specifies the Windows time at which the transaction occurred. Windows time is the number of
           #          milliseconds that have elapsed since the system was booted.
@@ -69,7 +69,8 @@ module DDE
         end
 
         #casting DDE data pointer into appropriate struct type
-        data = data_type.new(dde_get_data(args[5]))
+        struct_pointer, size = dde_get_data(args[5])
+        data = data_type.new(struct_pointer)
 
         values = [values.first, values.last] + data.members.map do |member|
           value = data[member] rescue 'plonk'

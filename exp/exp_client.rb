@@ -15,7 +15,7 @@ buffer.address
 
 callback = lambda do |*args|
   calls << [*args]
-  args.first == XTYP_CONNECT ? 1 : DDE_FACK
+  DDE_FACK
 end
 
 p status = DdeInitialize(buffer, callback, APPCLASS_STANDARD, 0)

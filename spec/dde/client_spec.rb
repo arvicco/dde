@@ -8,15 +8,16 @@ module DDETest
     @server_calls = []
     @client = DDE::Client.new {|*args| @client_calls << extract_values(*args); 1}
     @server = DDE::Server.new do |*args|
-      @server_calls << extract_values(*args)  #[Win::DDE::TYPES[args.shift]]+args; 1}
+      @server_calls << extract_values(*args)
       #puts "#{Time.now.strftime('%T.%6N')} #{extract_values(*args)}"
-      args.first == XTYP_CONNECT ? 1 : DDE_FACK
+      DDE_FACK
     end
     @server.start_service('service')
   end
 
   def stop_callback_recorder
     @client.stop_conversation if @client.conversation_active?
+    #@client.stop_dde if @client.dde_active?
     @server.stop_service if @server.service_active?
     @server.stop_dde if @server.dde_active?
   end
@@ -68,7 +69,7 @@ module DDETest
                   should raise_error /DDE is not initialized/
           @client.conversation_active?.should == false
         end
-      end
+      end  # context 'with inactive (uninitialized) DDE:'
 
       context 'with active (initialized) DDE AND existing DDE server supporting "service" topic' do
         before(:each ){start_callback_recorder}
@@ -110,7 +111,7 @@ module DDETest
         it 'if server confirms connect, XTYP_CONNECT_CONFIRM transaction to service`s callback follows' do
           @client.start_conversation 'service', 'topic'
 
-          p @server_calls, @client_calls    # ?????????? No XTYP_DISCONNECT ? Why ?
+          # p @server_calls, @client_calls    # ?????????? No XTYP_DISCONNECT ? Why ?
           @server_calls[1][0].should == 'XTYP_CONNECT_CONFIRM'
           @server_calls[1][3].should == @client.topic
           @server_calls[1][4].should == @client.service
@@ -119,7 +120,7 @@ module DDETest
         it 'client`s callback receives no transactions' do
           @client.start_conversation 'service', 'topic'
 
-          p @server_calls, @client.service.handle, @client.topic.handle, @client.conversation
+          #p @server_calls, @client.service.handle, @client.topic.handle, @client.conversation
           @client_calls.should == []
         end
 
@@ -134,10 +135,14 @@ module DDETest
           lambda{@client.start_conversation('not_a_service', 'topic')}.
                   should raise_error /A client`s attempt to establish a conversation has failed/
           @client.conversation_active?.should == false
+
+          #ensure
+          dde_free_string_handle(@client.id, @client.topic.handle)
+          dde_free_string_handle(@client.id, @client.service.handle)
         end
 
-      end
-    end
+      end # context 'with active (initialized) DDE AND existing DDE server supporting "service" topic' do
+    end # describe '#start_conversation'
 
     describe '#stop_conversation' do
 
@@ -154,7 +159,6 @@ module DDETest
         before(:each ){start_callback_recorder}
         after(:each )do
           stop_callback_recorder
-          #p @server_calls, @client_calls    # ?????????? No XTYP_DISCONNECT ? Why ?
         end
 
         it 'fails to stop conversation' do
@@ -164,7 +168,8 @@ module DDETest
         end
 
         context 'conversation already started' do
-          before(:each ){@client.start_conversation 'service', 'topic'}
+          before(:each){ @client.start_conversation 'service', 'topic' }
+          after(:each){ @client.stop_conversation if @client.conversation_active?}
 
           it 'stops conversation' do
             res = @client.stop_conversation
@@ -194,6 +199,6 @@ module DDETest
         end # context 'conversation already started'
 
       end # context 'with active (initialized) DDE AND existing DDE server supporting "service" topic'
-    end
-  end
+    end # describe '#stop_conversation'
+  end # describe DDE::Client
 end

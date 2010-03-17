@@ -72,9 +72,10 @@ module DDE
       @offset = 0
       @pos = 0 #; @c=0; @r=0
 
-      return nil unless (@data = dde_get_data(dde_handle)) && # DDE data is present at given dde_handle
-      read_int == TDT_TABLE &&            # and, first data block is tdtTable
-      read_int == 4                       # and, its length is 4 bytes
+      @data, size = dde_get_data(dde_handle)
+      return nil unless @data &&  # DDE data is present at given dde_handle
+      read_int == TDT_TABLE &&    # and, first data block is tdtTable
+      read_int == 4               # and, its length is 4 bytes
 
       @row = read_int
       @col = read_int
