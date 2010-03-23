@@ -3,32 +3,6 @@ require File.expand_path(File.dirname(__FILE__) + '/app_shared')
 
 module DDETest
 
-  def start_callback_recorder
-    @client_calls = []
-    @server_calls = []
-    @client = DDE::Client.new {|*args| @client_calls << extract_values(*args); 1}
-    @server = DDE::Server.new do |*args|
-      @server_calls << extract_values(*args)
-      #puts "#{Time.now.strftime('%T.%6N')} #{extract_values(*args)}"
-      DDE_FACK
-    end
-    @server.start_service('service')
-  end
-
-  def stop_callback_recorder
-    @client.stop_conversation if @client.conversation_active?
-    #@client.stop_dde if @client.dde_active?
-    @server.stop_service if @server.service_active?
-    @server.stop_dde if @server.dde_active?
-  end
-
-  def extract_values(type, format, conv, hsz1, hsz2, data, data1, data2)
-    [Win::DDE::TYPES[type], format, conv,
-     dde_query_string(@client.id, hsz1),
-     dde_query_string(@client.id, hsz2),
-     data, data1, data2]
-  end
-
   describe DDE::Client do
     before(:each){ @client = DDE::Client.new }
     after(:each){ @client.stop_dde if @client.dde_active?}
@@ -103,7 +77,7 @@ module DDETest
         it 'initiates XTYP_CONNECT transaction to service`s callback' do
           @client.start_conversation 'service', 'topic'
 
-          @server_calls.first[0].should == 'XTYP_CONNECT'
+          @server_calls.first[0].should == :XTYP_CONNECT
           @server_calls.first[3].should == @client.topic
           @server_calls.first[4].should == @client.service
         end
@@ -112,7 +86,7 @@ module DDETest
           @client.start_conversation 'service', 'topic'
 
           # p @server_calls, @client_calls    # ?????????? No XTYP_DISCONNECT ? Why ?
-          @server_calls[1][0].should == 'XTYP_CONNECT_CONFIRM'
+          @server_calls[1][0].should == :XTYP_CONNECT_CONFIRM
           @server_calls[1][3].should == @client.topic
           @server_calls[1][4].should == @client.service
         end
@@ -157,9 +131,7 @@ module DDETest
 
       context 'with active (initialized) DDE AND existing DDE server supporting "service" topic' do
         before(:each ){start_callback_recorder}
-        after(:each )do
-          stop_callback_recorder
-        end
+        after(:each ){stop_callback_recorder}
 
         it 'fails to stop conversation' do
           lambda{@client.stop_conversation}.
@@ -193,12 +165,36 @@ module DDETest
             pending
             @client.stop_conversation
             p @server_calls, @client_calls    # ?????????? No XTYP_DISCONNECT ? Why ?
-            @server_calls.last[0].should == 'XTYP_DISCONNECT'
+            @server_calls.last[0].should == :XTYP_DISCONNECT
           end
 
         end # context 'conversation already started'
 
       end # context 'with active (initialized) DDE AND existing DDE server supporting "service" topic'
     end # describe '#stop_conversation'
+
+    describe '#send_data' do
+      context 'with active (initialized) DDE AND existing DDE server supporting "service" topic' do
+        before(:each )do
+          start_callback_recorder do |*args|
+            @server_calls << extract_values(*args)
+            if args[0] == XTYP_POKE
+              @data, @size = dde_get_data(args[5])
+            end
+            DDE_FACK
+          end
+          @client.start_conversation 'service', 'topic'
+        end
+        after(:each ){stop_callback_recorder}
+
+        it 'sends data to server' do
+          @client.send_data TEST_STRING, CF_TEXT, "item"
+          @server_calls.last[0].should == :XTYP_POKE
+          @data.get_bytes(0, @size).rstrip.should == TEST_STRING
+        end
+
+      end # context 'with active (initialized) DDE'
+    end # describe #send_data
+
   end # describe DDE::Client
 end

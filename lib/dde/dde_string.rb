@@ -26,7 +26,7 @@ module DDE
         end
       rescue => e
       end
-      raise DDE::Errors::StringError, "Failed to initialize DDE string: #{e}" unless @handle && @name && !e
+      raise DDE::Errors::StringError, "Failed to initialize DDE string: #{e} #{e.backtrace.join("\n")}" unless @handle && @name && !e
       super @name
     end
   end

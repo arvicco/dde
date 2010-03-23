@@ -3,6 +3,10 @@ require File.expand_path(File.dirname(__FILE__) + '/server_shared')
 
 module DDETest
 
+  describe DDE::Server, ' in general:' do
+    it_should_behave_like "DDE Server"
+  end
+
   describe DDE::Server do
     before(:each ){ @server = DDE::Server.new }
     after(:each) do
@@ -10,7 +14,12 @@ module DDETest
       @server.stop_dde if @server.dde_active?
     end
 
-    it_should_behave_like "DDE Server"
+    it 'new without parameters creates Server but does not activate DDEML or start service' do
+      @server.id.should == nil
+      @server.service.should == nil
+      @server.dde_active?.should == false
+      @server.service_active?.should == false
+    end
 
     describe '#start_service' do
 
@@ -23,8 +32,6 @@ module DDETest
         lambda{@server.start_service('myservice')}.should raise_error DDE::Errors::ServiceError
         @server.service_active?.should == false
       end
-
-    end
-
-  end
+    end #describe '#start_service'
+  end # describe DDE::Server do
 end

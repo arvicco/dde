@@ -3,6 +3,10 @@ require File.expand_path(File.dirname(__FILE__) + '/server_shared')
 
 module DDETest
 
+  describe DDE::XlServer, ' in general:' do
+    it_should_behave_like "DDE Server"
+  end
+
   describe DDE::XlServer do
     before(:each ){ @server = DDE::XlServer.new }
     after(:each) do
@@ -10,17 +14,15 @@ module DDETest
       @server.stop_dde if @server.dde_active?
     end
 
-    it_should_behave_like "DDE Server"
-
-    it 'new without parameters creates empty table attribute' do
-      @server.table.should be_an DDE::XlTable
-      @server.table.should be_empty
+    it 'new without parameters has empty data attribute' do
+      @server.data.should be_an DDE::XlTable
+      @server.data.should be_empty
     end
 
-    it 'new with attached callback block creates empty table attribute' do
+    it 'new with attached callback block has empty data attribute' do
       server = DDE::XlServer.new {|*args|}
-      @server.table.should be_an DDE::XlTable
-      @server.table.should be_empty
+      @server.data.should be_an DDE::XlTable
+      @server.data.should be_empty
     end
 
     describe '#start_service' do
@@ -55,8 +57,7 @@ module DDETest
           @server.service.handle.should be_an Integer
           @server.service.handle.should_not == 0
         end
-      end
+      end # context 'with active (initialized) DDE:'
     end # describe '#start_service'
-
-  end
+  end # describe DDE::XlServer
 end

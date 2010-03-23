@@ -6,7 +6,7 @@ module DDE
     attr_accessor :print, :calls
 
     # Creates new DDE monitor instance
-    def initialize(init_flags=nil, &callback)
+    def initialize(init_flags=nil, print = nil, &callback)
       init_flags ||=
               APPCLASS_MONITOR |  # this is monitor
               MF_CALLBACKS     |  # monitor callback functions
@@ -17,6 +17,7 @@ module DDE
               MF_POSTMSGS      |  # monitor posted DDE messages
               MF_SENDMSGS         # monitor sent DDE messages
 
+      @print = print
       @calls = []
 
       callback ||= lambda do |*args|

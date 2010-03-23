@@ -16,7 +16,7 @@ module DDETest
         @app.init_flags.should == APPCLASS_STANDARD
         @app.dde_active?.should == true
       end unless described_class == DDE::Monitor
-    
+
     describe '#start_dde' do
       it 'starts DDE with callback and default init_flags' do
         res = @app.start_dde {|*args|}
