@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/app_shared')
 
-module DDETest
+module DdeTest
   shared_examples_for "DDE Server" do
 
     it_should_behave_like "DDE App"
@@ -24,7 +24,7 @@ module DDETest
           it 'with attached block, initializes DDE and starts new service' do
             @server.start_service('myservice') {|*args|}.should be_true
 
-            @server.service.should be_a DDE::DdeString
+            @server.service.should be_a Dde::DdeString
             @server.service.should == 'myservice'
             @server.service.name.should == 'myservice'
             @server.service.handle.should be_an Integer
@@ -44,7 +44,7 @@ module DDETest
             res = @server.start_service 'myservice'
             res.should be_true
 
-            @server.service.should be_a DDE::DdeString
+            @server.service.should be_a Dde::DdeString
             @server.service.should == 'myservice'
             @server.service.name.should == 'myservice'
             @server.service.handle.should be_an Integer
@@ -52,7 +52,7 @@ module DDETest
           end
 
           it 'fails to starts new service if name is not a String' do
-            lambda{@server.start_service(11)}.should raise_error DDE::Errors::ServiceError
+            lambda{@server.start_service(11)}.should raise_error Dde::Errors::ServiceError
             @server.service_active?.should == false
           end
         end # context 'with active (initialized) DDE:'
@@ -61,7 +61,7 @@ module DDETest
       describe '#stop_service' do
         context 'with inactive (uninitialized) DDE:' do
           it 'fails to stop service' do
-            lambda{@server.stop_service}.should raise_error DDE::Errors::ServiceError
+            lambda{@server.stop_service}.should raise_error Dde::Errors::ServiceError
           end
         end
 

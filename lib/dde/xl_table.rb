@@ -1,4 +1,4 @@
-module DDE
+module Dde
   extend FFI::Library  # todo: < Array ?
 #  class Conv < FFI::Union
 #    layout( :w, :ushort, # word should be 2 bytes, not 8
@@ -9,7 +9,7 @@ module DDE
 
   # XLTable class represents a single chunk of DDE data formatted as an Excel table
   class XlTable
-    include Win::DDE
+    include Win::Dde
 
     # Received data types
     TDT_FLOAT = 1

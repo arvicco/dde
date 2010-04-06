@@ -4,10 +4,10 @@ require 'win/gui/message'
 include Win::GUI::Message
 
 require 'dde'
-include Win::DDE
+include Win::Dde
 
 calls = []
-$monitor = DDE::Monitor.new
+$monitor = Dde::Monitor.new
 msg = Msg.new  # pointer to Msg FFI struct
 
 # Starting message loop (necessary for DDE processing)

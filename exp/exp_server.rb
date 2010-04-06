@@ -4,10 +4,10 @@ require 'win/gui/message'
 include Win::GUI::Message
 
 #require_relative 'exp_lib'
-#include DDELib
+#include DdeLib
 
 require 'win/dde'
-include Win::DDE
+include Win::Dde
 
 calls = []
 buffer = FFI::MemoryPointer.new(:long).write_long(0)
@@ -15,7 +15,7 @@ buffer.address
 
 callback = lambda do |*args|
   calls << [*args]
-  puts "#{Time.now.strftime('%T.%6N')} #{args.map{|e|e.respond_to?(:address) ? e.address : (Win::DDE::TYPES[e] || e)}}"
+  puts "#{Time.now.strftime('%T.%6N')} #{args.map{|e|e.respond_to?(:address) ? e.address : (Win::Dde::TYPES[e] || e)}}"
   args.first == XTYP_CONNECT ? 1 : DDE_FACK
 end
 
@@ -39,6 +39,6 @@ while msg = get_message()
   dispatch_message(msg)
 end
 
-p calls.map{|c| c.map{|e|e.respond_to?(:address) ? e.address : (Win::DDE::TYPES[e] || e)}}
+p calls.map{|c| c.map{|e|e.respond_to?(:address) ? e.address : (Win::Dde::TYPES[e] || e)}}
 
-p Win::DDE::ERRORS[DdeGetLastError(id)]
+p Win::Dde::ERRORS[DdeGetLastError(id)]

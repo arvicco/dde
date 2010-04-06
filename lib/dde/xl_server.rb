@@ -1,6 +1,6 @@
 require 'dde/xl_table'
 
-module DDE
+module Dde
 
   # Class encapsulates DDE Server mimicking Excel. It is used to create DDE server with specific service name
   # (default name 'excel') and store data received by the server via DDE
@@ -14,10 +14,10 @@ module DDE
     # Creates new Xl Server instance
     def initialize(init_flags = nil, &dde_callback )
 
-      @data = DDE::XlTable.new
+      @data = Dde::XlTable.new
 
       # Trying to register or retrieve existing format XlTable
-      try 'Registering format XlTable', DDE::Errors::FormatError do
+      try 'Registering format XlTable', Dde::Errors::FormatError do
         @format = register_clipboard_format("XlTable")
       end
 

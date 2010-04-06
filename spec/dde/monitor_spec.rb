@@ -1,20 +1,20 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 require File.expand_path(File.dirname(__FILE__) + '/app_shared')
 
-module DDETest
+module DdeTest
 
-  describe DDE::Monitor, " in general" do
+  describe Dde::Monitor, " in general" do
     it_should_behave_like "DDE App"
   end
 
-  describe DDE::Monitor do
+  describe Dde::Monitor do
     before(:each){ }
     after(:each){ @monitor.stop_dde if @monitor.dde_active? }
     # SEEMS LIKE IT DOESN'T stop system from sending :XTYP_MONITOR transactions to already dead callback :(
 
 
     it 'starts without constructor parameters' do
-      @monitor = DDE::Monitor.new
+      @monitor = Dde::Monitor.new
 
       @monitor.id.should be_an Integer
       @monitor.id.should_not == 0

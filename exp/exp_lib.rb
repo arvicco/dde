@@ -5,7 +5,7 @@ require 'win/dde'
 require 'win/gui/message'
 require_relative 'exp_lib'
 
-module DDELib
+module DdeLib
   extend FFI::Library
   CP_WINANSI = 1004
   DNS_REGISTER = 1

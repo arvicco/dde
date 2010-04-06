@@ -1,18 +1,18 @@
-require 'rubygems'
-require 'spork'
-
-Spork.prefork do
-  # Loading more in this block will cause your tests to run faster. However, 
-  # if you change any configuration or code from libraries loaded here, you'll
-  # need to restart spork for it take effect.
-
-end
-
-Spork.each_run do
-  # This code will be run each time you run your specs.
-
-end
-
+#require 'rubygems'
+#require 'spork'
+#
+#Spork.prefork do
+#  # Loading more in this block will cause your tests to run faster. However,
+#  # if you change any configuration or code from libraries loaded here, you'll
+#  # need to restart spork for it take effect.
+#
+#end
+#
+#Spork.each_run do
+#  # This code will be run each time you run your specs.
+#
+#end
+#
 # --- Instructions ---
 # - Sort through your spec_helper file. Place as much environment loading 
 #   code that you don't normally modify during development in the 
@@ -22,10 +22,6 @@ end
 #   and during each_run!
 # - These instructions should self-destruct in 10 seconds.  If they don't,
 #   feel free to delete them.
-#
-
-
-
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
@@ -60,10 +56,10 @@ end
 
 Spec::Runner.configure { |config| config.extend(SpecMacros) }
 
-module DDETest
+module DdeTest
 
-  include Win::DDE
-#  @@monitor = DDE::Monitor.new
+  include Win::Dde
+#  @@monitor = Dde::Monitor.new
 
   TEST_IMPOSSIBLE = 'Impossible'
   TEST_STRING = "Data String"
@@ -79,8 +75,8 @@ module DDETest
   def start_callback_recorder(&server_block)
     @client_calls = []
     @server_calls = []
-    @client = DDE::Client.new {|*args| @client_calls << extract_values(*args); DDE_FACK}
-    @server = DDE::Server.new &server_block || proc {|*args| @server_calls << extract_values(*args); DDE_FACK }
+    @client = Dde::Client.new {|*args| @client_calls << extract_values(*args); DDE_FACK}
+    @server = Dde::Server.new &server_block || proc {|*args| @server_calls << extract_values(*args); DDE_FACK }
     @server.start_service('service')
   end
 
@@ -100,7 +96,7 @@ module DDETest
           id = @client.id if @client
           id ||= @server.id if @server
           dde_query_string(id, arg)\
-              || Win::DDE.constants(false).inject(nil) {|res, const| arg == Win::DDE.const_get(const) ? res || const : res }\
+              || Win::Dde.constants(false).inject(nil) {|res, const| arg == Win::Dde.const_get(const) ? res || const : res }\
               || arg
         else
           arg

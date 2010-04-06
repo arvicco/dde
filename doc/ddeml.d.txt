@@ -320,28 +320,28 @@ alias MONMSGSTRUCT* PMONMSGSTRUCT;
 extern (Windows) {
 	BOOL DdeAbandonTransaction(DWORD, HCONV, DWORD);
 	PBYTE DdeAccessData(HDDEDATA, PDWORD);
-	HDDEDATA DdeAddData(HDDEDATA, PBYTE, DWORD, DWORD);
-	HDDEDATA DdeClientTransaction(PBYTE, DWORD, HCONV, HSZ, UINT, UINT,
+	HDdeDATA DdeAddData(HDdeDATA, PBYTE, DWORD, DWORD);
+	HDdeDATA DdeClientTransaction(PBYTE, DWORD, HCONV, HSZ, UINT, UINT,
 	  DWORD, PDWORD);
 	int DdeCmpStringHandles(HSZ, HSZ);
 	HCONV DdeConnect(DWORD, HSZ, HSZ, PCONVCONTEXT);
 	HCONVLIST DdeConnectList(DWORD, HSZ, HSZ, HCONVLIST, PCONVCONTEXT);
-	HDDEDATA DdeCreateDataHandle(DWORD, PBYTE, DWORD, DWORD, HSZ, UINT,
+	HDdeDATA DdeCreateDataHandle(DWORD, PBYTE, DWORD, DWORD, HSZ, UINT,
 	  UINT);
 	HSZ DdeCreateStringHandleA(DWORD, LPSTR, int);
 	HSZ DdeCreateStringHandleW(DWORD, LPWSTR, int);
 	BOOL DdeDisconnect(HCONV);
 	BOOL DdeDisconnectList(HCONVLIST);
 	BOOL DdeEnableCallback(DWORD, HCONV, UINT);
-	BOOL DdeFreeDataHandle(HDDEDATA);
+	BOOL DdeFreeDataHandle(HDdeDATA);
 	BOOL DdeFreeStringHandle(DWORD, HSZ);
-	DWORD DdeGetData(HDDEDATA, PBYTE, DWORD, DWORD);
+	DWORD DdeGetData(HDdeDATA, PBYTE, DWORD, DWORD);
 	UINT DdeGetLastError(DWORD);
 	BOOL DdeImpersonateClient(HCONV);
 	UINT DdeInitializeA(PDWORD, PFNCALLBACK, DWORD, DWORD);
 	UINT DdeInitializeW(PDWORD, PFNCALLBACK, DWORD, DWORD);
 	BOOL DdeKeepStringHandle(DWORD, HSZ);
-	HDDEDATA DdeNameService(DWORD, HSZ, HSZ, UINT);
+	HDdeDATA DdeNameService(DWORD, HSZ, HSZ, UINT);
 	BOOL DdePostAdvise(DWORD, HSZ, HSZ);
 	UINT DdeQueryConvInfo(HCONV, DWORD, PCONVINFO);
 	HCONV DdeQueryNextServer(HCONVLIST, HCONV);
@@ -349,19 +349,19 @@ extern (Windows) {
 	DWORD DdeQueryStringW(DWORD, HSZ, LPWSTR, DWORD, int);
 	HCONV DdeReconnect(HCONV);
 	BOOL DdeSetUserHandle(HCONV, DWORD, DWORD);
-	BOOL DdeUnaccessData(HDDEDATA);
+	BOOL DdeUnaccessData(HDdeDATA);
 	BOOL DdeUninitialize(DWORD);
 }
 
 const TCHAR[]
-	SZDDESYS_TOPIC         = "System",
-	SZDDESYS_ITEM_TOPICS   = "Topics",
-	SZDDESYS_ITEM_SYSITEMS = "SysItems",
-	SZDDESYS_ITEM_RTNMSG   = "ReturnMessage",
-	SZDDESYS_ITEM_STATUS   = "Status",
-	SZDDESYS_ITEM_FORMATS  = "Formats",
-	SZDDESYS_ITEM_HELP     = "Help",
-	SZDDE_ITEM_ITEMLIST    = "TopicItemList";
+	SZDdeSYS_TOPIC         = "System",
+	SZDdeSYS_ITEM_TOPICS   = "Topics",
+	SZDdeSYS_ITEM_SYSITEMS = "SysItems",
+	SZDdeSYS_ITEM_RTNMSG   = "ReturnMessage",
+	SZDdeSYS_ITEM_STATUS   = "Status",
+	SZDdeSYS_ITEM_FORMATS  = "Formats",
+	SZDdeSYS_ITEM_HELP     = "Help",
+	SZDde_ITEM_ITEMLIST    = "TopicItemList";
 
 version (Unicode) {
 	alias DdeCreateStringHandleW DdeCreateStringHandle;

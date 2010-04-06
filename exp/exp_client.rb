@@ -7,7 +7,7 @@ include Win::GUI::Message
 #include DDELib
 
 require 'win/dde'
-include Win::DDE
+include Win::Dde
 
 calls = []
 buffer = FFI::MemoryPointer.new(:long).write_long(0)
@@ -30,15 +30,15 @@ p conv_handle = DdeConnect(id, handle, handle, nil)
 str = FFI::MemoryPointer.from_string("Poke_string\n\x00\x00")
 
 p DdeClientTransaction(str, str.size, conv_handle, handle, CF_TEXT, XTYP_POKE, 1000, nil)
-p Win::DDE::ERRORS[DdeGetLastError(id)]
+p Win::Dde::ERRORS[DdeGetLastError(id)]
 p DdeClientTransaction(str, str.size, conv_handle, handle, CF_TEXT, XTYP_EXECUTE, 1000, nil)
-p Win::DDE::ERRORS[DdeGetLastError(id)]
+p Win::Dde::ERRORS[DdeGetLastError(id)]
 sleep 0.01
 p DdeClientTransaction(str, str.size, conv_handle, handle, CF_TEXT, XTYP_EXECUTE, TIMEOUT_ASYNC, nil)
-p Win::DDE::ERRORS[DdeGetLastError(id)]
+p Win::Dde::ERRORS[DdeGetLastError(id)]
 
 p DdeDisconnect(conv_handle)
 
-p calls.map{|c| c.map{|e|e.respond_to?(:address) ? e.address : (Win::DDE::TYPES[e] || e)}}
+p calls.map{|c| c.map{|e|e.respond_to?(:address) ? e.address : (Win::Dde::TYPES[e] || e)}}
 
-p Win::DDE::ERRORS[DdeGetLastError(id)]
+p Win::Dde::ERRORS[DdeGetLastError(id)]

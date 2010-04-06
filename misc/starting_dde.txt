@@ -1,5 +1,5 @@
 
-Могу предложить код на Delphi для автоматического старта экспорта по DDE из Quik. 
+пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ Delphi пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ Dde пїЅпїЅ Quik.
 
 function FindMenuItemByPart(Menu: HMENU; Name: string): Integer;
 var
@@ -31,11 +31,11 @@ begin
    if (Quik = 0) then Exit;
 
    MainMenu := GetMenu(Quik);
-   Temp := FindMenuItemByPart(MainMenu, '&Экспорт данных');
+   Temp := FindMenuItemByPart(MainMenu, '&пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ');
    if (Temp = -1) then Exit;
 
    SubMenu := GetSubMenu(MainMenu, Temp);
-   Temp := FindMenuItemByPart(SubMenu, 'Начать экспорт таблиц по &DDE');
+   Temp := FindMenuItemByPart(SubMenu, 'пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ &Dde');
    if (Temp = -1) then Exit;
 
    MenuItem := GetMenuItemID(SubMenu, Temp);

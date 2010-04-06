@@ -1,9 +1,9 @@
-module DDE
+module Dde
 
   # Class encapsulates DDE string. In addition to normal string behavior,
   # it also has *handle* that can be passed to dde functions
   class DdeString < String
-    include Win::DDE
+    include Win::Dde
 
     attr_accessor :handle, # string handle passable to DDEML functions
                   :instance_id, # instance id of DDE app that created this DdeString
@@ -26,7 +26,7 @@ module DDE
         end
       rescue => e
       end
-      raise DDE::Errors::StringError, "Failed to initialize DDE string: #{e} #{e.backtrace.join("\n")}" unless @handle && @name && !e
+      raise Dde::Errors::StringError, "Failed to initialize DDE string: #{e} #{e.backtrace.join("\n")}" unless @handle && @name && !e
       super @name
     end
   end

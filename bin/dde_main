@@ -6,7 +6,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include? lib
 require 'dde'
 require 'win/gui/message'
 
-include Win::DDE
+include Win::Dde
 include Win::GUI::Message
 
 # console output redirection (may need to wrap it in synchronization code, etc)
@@ -18,7 +18,7 @@ end
 
 # Creating DDE server and staring service with default name 'excel' and default callback
 cout "Starting DDE server with service 'excel'\n"
-server = DDE::XlServer.new.start_service
+server = Dde::XlServer.new.start_service
 
 # Command line args define actions to be run after each successful DDE data transaction
 server.actions = ARGV.empty? ? [:timer] : ARGV

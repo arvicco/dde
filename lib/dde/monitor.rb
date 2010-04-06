@@ -1,4 +1,4 @@
-module DDE
+module Dde
 
   # Class encapsulates DDE Monitor that prints all DDE transactions to console
   class Monitor < App
@@ -87,7 +87,7 @@ module DDE
       return 0 if arg == 0
       #Trying to interpete arg as a DDE string
       dde_query_string(@id, arg)\
-          || Win::DDE.constants(false).inject(nil) {|res, const| arg == Win::DDE.const_get(const) ? res || const : res }\
+          || Win::Dde.constants(false).inject(nil) {|res, const| arg == Win::Dde.const_get(const) ? res || const : res }\
           || arg
     end
   end

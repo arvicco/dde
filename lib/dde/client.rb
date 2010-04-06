@@ -1,4 +1,4 @@
-module DDE
+module Dde
 
   # Class encapsulates DDE Client that requests connection with DDE server and exchanges data with it via DDE
   class Client < App
@@ -16,13 +16,13 @@ module DDE
     # Establish a conversation with a server application that supports the specified service
     # name and topic name pair.
     def start_conversation( service=nil, topic=nil )
-      try "Starting conversation #{service} #{topic}", DDE::Errors::ClientError do
+      try "Starting conversation #{service} #{topic}", Dde::Errors::ClientError do
         error "DDE is not initialized" unless dde_active?
         error "Another conversation already established" if conversation_active?
 
         # Create DDE strings for service and topic unless they are omitted
-        @service = DDE::DdeString.new(@id, service) if service
-        @topic = DDE::DdeString.new(@id, topic) if topic
+        @service = Dde::DdeString.new(@id, service) if service
+        @topic = Dde::DdeString.new(@id, topic) if topic
 
         # Initiate new DDE conversation, returns conversation handle or nil 
         error unless @conversation = dde_connect(@id, @service.handle, @topic.handle)
@@ -31,7 +31,7 @@ module DDE
 
     # Stops active conversation, raises error if no conversations active
     def stop_conversation
-      try "Stopping conversation", DDE::Errors::ClientError do
+      try "Stopping conversation", Dde::Errors::ClientError do
         error "DDE not started" unless dde_active?
         error "Conversation not started" unless conversation_active?
 
@@ -76,13 +76,13 @@ module DDE
       result = nil
       trans_id = FFI::MemoryPointer.new(:uint32).put_uint32(0,0)
 
-      try "Sending data to server", DDE::Errors::ClientError do
+      try "Sending data to server", Dde::Errors::ClientError do
         error "DDE not started" unless dde_active?
         error "Conversation not started" unless conversation_active?
 
         item_handle = case item
           when String
-            DDE::DdeString.new(@id, service).handle
+            Dde::DdeString.new(@id, service).handle
           when DdeString
             item.handle
           else

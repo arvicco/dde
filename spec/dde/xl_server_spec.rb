@@ -1,27 +1,27 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 require File.expand_path(File.dirname(__FILE__) + '/server_shared')
 
-module DDETest
+module DdeTest
 
-  describe DDE::XlServer, ' in general:' do
+  describe Dde::XlServer, ' in general:' do
     it_should_behave_like "DDE Server"
   end
 
-  describe DDE::XlServer do
-    before(:each ){ @server = DDE::XlServer.new }
+  describe Dde::XlServer do
+    before(:each ){ @server = Dde::XlServer.new }
     after(:each) do
       @server.stop_service if @server.service_active?
       @server.stop_dde if @server.dde_active?
     end
 
     it 'new without parameters has empty data attribute' do
-      @server.data.should be_an DDE::XlTable
+      @server.data.should be_an Dde::XlTable
       @server.data.should be_empty
     end
 
     it 'new with attached callback block has empty data attribute' do
-      server = DDE::XlServer.new {|*args|}
-      @server.data.should be_an DDE::XlTable
+      server = Dde::XlServer.new {|*args|}
+      @server.data.should be_an Dde::XlTable
       @server.data.should be_empty
     end
 
@@ -30,7 +30,7 @@ module DDETest
         it 'service name defaults to "excel" if not given explicitly' do
           @server.start_service {|*args|}.should be_true
 
-          @server.service.should be_a DDE::DdeString
+          @server.service.should be_a Dde::DdeString
           @server.service.should == 'excel'
           @server.service.name.should == 'excel'
           @server.service.handle.should be_an Integer
@@ -46,12 +46,12 @@ module DDETest
       end
 
       context 'with active (initialized) DDE:' do
-        before(:each ){ @server = DDE::XlServer.new {|*args|}}
+        before(:each ){ @server = Dde::XlServer.new {|*args|}}
 
         it 'service name defaults to "excel" if not given explicitly' do
           @server.start_service.should be_true
 
-          @server.service.should be_a DDE::DdeString
+          @server.service.should be_a Dde::DdeString
           @server.service.should == 'excel'
           @server.service.name.should == 'excel'
           @server.service.handle.should be_an Integer
@@ -59,5 +59,5 @@ module DDETest
         end
       end # context 'with active (initialized) DDE:'
     end # describe '#start_service'
-  end # describe DDE::XlServer
+  end # describe Dde::XlServer
 end

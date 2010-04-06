@@ -1,8 +1,8 @@
-module DDE
+module Dde
 
   module Errors                             # :nodoc:
     def self.[](error_code)
-      Win::DDE::ERRORS[error_code]
+      Win::Dde::ERRORS[error_code]
     end
 
     class InitError < RuntimeError          # :nodoc:
@@ -17,10 +17,10 @@ module DDE
     end
   end
 
-  # Class encapsulates DDE application. DDE::App serves as a base for more specific types,
-  # such as DDE::Server or DDE:: Client.
+  # Class encapsulates DDE application. Dde::App serves as a base for more specific types,
+  # such as Dde::Server or Dde:: Client.
   class App
-    include Win::DDE
+    include Win::Dde
 
     attr_reader :id, :init_flags
 
@@ -63,7 +63,7 @@ module DDE
 
     # Expects a block, yields to it inside a rescue block, raises given error_type with extended fail message.
     # Returns self in case of success (to enable method chaining).
-    def try( action, error_type=DDE::Errors::InitError )
+    def try( action, error_type=Dde::Errors::InitError )
       begin
         yield
       rescue => e
@@ -76,9 +76,9 @@ module DDE
     def error( message = nil )
       raise case message
         when Integer
-          DDE::Errors[message]
+          Dde::Errors[message]
         when nil
-          DDE::Errors[dde_get_last_error(@id)]
+          Dde::Errors[dde_get_last_error(@id)]
         else
           message
       end

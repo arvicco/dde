@@ -1,14 +1,14 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 require File.expand_path(File.dirname(__FILE__) + '/server_shared')
 
-module DDETest
+module DdeTest
 
-  describe DDE::Server, ' in general:' do
+  describe Dde::Server, ' in general:' do
     it_should_behave_like "DDE Server"
   end
 
-  describe DDE::Server do
-    before(:each ){ @server = DDE::Server.new }
+  describe Dde::Server do
+    before(:each ){ @server = Dde::Server.new }
     after(:each) do
       @server.stop_service if @server.service_active?
       @server.stop_dde if @server.dde_active?
@@ -29,9 +29,9 @@ module DDETest
       end
 
       it 'callback block should be given explicitly' do
-        lambda{@server.start_service('myservice')}.should raise_error DDE::Errors::ServiceError
+        lambda{@server.start_service('myservice')}.should raise_error Dde::Errors::ServiceError
         @server.service_active?.should == false
       end
     end #describe '#start_service'
-  end # describe DDE::Server do
+  end # describe Dde::Server do
 end

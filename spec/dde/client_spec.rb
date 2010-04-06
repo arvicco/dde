@@ -1,10 +1,10 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 require File.expand_path(File.dirname(__FILE__) + '/app_shared')
 
-module DDETest
+module DdeTest
 
-  describe DDE::Client do
-    before(:each){ @client = DDE::Client.new }
+  describe Dde::Client do
+    before(:each){ @client = Dde::Client.new }
     after(:each){ @client.stop_dde if @client.dde_active?}
 
     it_should_behave_like "DDE App"
@@ -19,7 +19,7 @@ module DDETest
     end
 
     it 'new with attached callback block creates Client and activates DDEML' do
-      @client = DDE::Client.new {|*args|}
+      @client = Dde::Client.new {|*args|}
       @client.id.should be_an Integer
       @client.id.should_not == 0
       @client.dde_active?.should == true
@@ -67,7 +67,7 @@ module DDETest
 
           @client.conversation.should be_an Integer
           @client.conversation.should_not == 0
-          @client.service.should be_a DDE::DdeString
+          @client.service.should be_a Dde::DdeString
           @client.service.should == 'service'
           @client.service.name.should == 'service'
           @client.conversation.should be_an Integer

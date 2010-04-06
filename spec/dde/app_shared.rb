@@ -1,4 +1,4 @@
-module DDETest
+module DdeTest
   shared_examples_for "DDE App" do
     before(:each ){ @app = described_class.new }
     after(:each ){ @app.stop_dde if @app.dde_active?}
@@ -7,7 +7,7 @@ module DDETest
         @app.id.should == nil
         @app.init_flags.should == nil
         @app.dde_active?.should == false
-      end unless described_class == DDE::Monitor
+      end unless described_class == Dde::Monitor
 
       it 'starts DDE (initializes as STANDARD DDE app) with given callback block' do
         @app = described_class.new {|*args|}
@@ -15,7 +15,7 @@ module DDETest
         @app.id.should_not == 0
         @app.init_flags.should == APPCLASS_STANDARD
         @app.dde_active?.should == true
-      end unless described_class == DDE::Monitor
+      end unless described_class == Dde::Monitor
 
     describe '#start_dde' do
       it 'starts DDE with callback and default init_flags' do
@@ -25,7 +25,7 @@ module DDETest
         @app.id.should_not == 0
         @app.init_flags.should == APPCLASS_STANDARD
         @app.dde_active?.should == true
-      end unless described_class == DDE::Monitor
+      end unless described_class == Dde::Monitor
 
       it 'returns self if success (allows method chain)' do
         @app.start_dde {|*args|}.should == @app
@@ -41,7 +41,7 @@ module DDETest
       end
 
       it 'raises InitError if no callback was given' do
-        lambda{ @app.start_dde}.should raise_error DDE::Errors::InitError
+        lambda{ @app.start_dde}.should raise_error Dde::Errors::InitError
       end
 
       it 'reinitializes with new flags and callback if it was already initialized' do
@@ -76,9 +76,9 @@ module DDETest
       end
 
       it 'raises InitError if dde was not active first' do
-        lambda{ @app.stop_dde}.should raise_error DDE::Errors::InitError
+        lambda{ @app.stop_dde}.should raise_error Dde::Errors::InitError
       end
-    end unless described_class == DDE::Monitor
+    end unless described_class == Dde::Monitor
 
 
   end
