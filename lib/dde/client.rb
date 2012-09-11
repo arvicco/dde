@@ -55,6 +55,22 @@ module Dde
       result
     end
 
+    # Sends XTYP_REQUEST transaction to server if conversation was already established.
+    # item:: item witch data is requestet
+    def request_data( item )
+      handle, trans_id = start_transaction(XTYP_REQUEST, nil, 0, CF_TEXT, item)
+      buffer, size = dde_get_data(handle)
+      return [buffer.read_string_to_null,size]
+    end
+    
+    # Sends XTYP_EXECUTE transaction to server if conversation was already established.
+    # data:: data being sent (will be coerced to String unless is already a (packed) String)
+    def execute_data( data )
+      data_pointer = FFI::MemoryPointer.from_string(data.to_s)
+      result, trans_id = start_transaction(XTYP_EXECUTE, data_pointer, data_pointer.size, 0, 0)
+      return result
+    end
+
     # Initiates transaction to server if conversation was already established.
     # transaction_type:: XTYP_ADVSTART, XTYP_ADVSTOP, XTYP_EXECUTE, XTYP_POKE, XTYP_REQUEST
     # data_pointer:: pointer to data being sent (either FFI::MemoryPointer or DDE data_handle)
@@ -82,7 +98,7 @@ module Dde
 
         item_handle = case item
           when String
-            Dde::DdeString.new(@id, service).handle
+            Dde::DdeString.new(@id, item).handle
           when DdeString
             item.handle
           else
